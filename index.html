@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>LaZerRanks</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+  function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+  }
+</script>
+<script>
+function genGlickoTable() {
+  var date = document.getElementById('dateInput').value
+  var num = document.getElementById('numInput').value
+  var eventId = document.getElementById('frm1').elements[0].value
+  filepath = "/ranks/data/" + date + "_Glicko-2/" + eventId + "_" + date + ".csv"
+  d3.csv(filepath, function(d) {
+    return {
+      rank : +d.Rank,
+      rating : d.Rating,
+      country : d.Country,
+      name : d.Name,
+      wcaid : d.WcaId
+    }}).then((ratings) => {
+      var table_data = '<table class="table table-bordered table-striped"><tr><th>Rank</th><th>Name</th><th>Country</th><th>Rating</th>'
+      for (var i = 0; i<num; i++)
+      {
+        if (ratings[i].rating == 1500)
+          ratingString = "unrated"
+        else {
+          ratingString = round(ratings[i].rating, 2)
+        }
+        table_data += '<tr>' +
+                      '<td>' + ratings[i].rank + '</td>' +
+                      '<td>' + ratings[i].name + '</td>' +
+                      '<td>' + ratings[i].country + '</td>' +
+                      '<td>' + ratingString + '</td>' +
+                      '</tr>'
+      }
+      table_data += '</table>'
+      $('#ranks_table').html(table_data)
+    })
+}
+</script>
+<script>
+function genLaZerRanksTable() {
+  var date = document.getElementById('dateInput').value
+  var num = document.getElementById('numInput').value
+  var eventId = document.getElementById('frm1').elements[0].value
+  filepath = "/ranks/data/" + date + "/" + eventId + "_" + date + ".csv"
+  d3.csv(filepath, function(d) {
+    return {
+      rank : +d.Rank,
+      rating : d.Rating,
+      nsolves : +d.nSolves,
+      country : d.Country,
+      name : d.Name,
+      best : d.Best,
+      date : d.Date,
+      wcaid : d.WcaId
+    }}).then((ratings) => {
+      var table_data = '<table class="table table-bordered table-striped"><tr><th>Rank</th><th>Name</th><th>Country</th><th>Rating</th><th>Solves</th><th>Date of Last Comp</th>'
+      for (var i = 0; i<num; i++)
+      {
+        rating = ratings[i].rating
+        minutes = Math.floor(rating/60)
+        seconds = rating - minutes*60
+        if (rating >= 60.0) {
+          if (seconds < 10) {
+            if (round(seconds, 2)%1 == 0) {
+              ratingString = minutes + ":0" + round(seconds, 2) + ".00"
+            }
+            else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+              ratingString = minutes + ":0" + round(seconds, 2) + "0"
+            }
+            else {
+              ratingString = minutes + ":0" + round(seconds, 2)
+            }
+          }
+          else {
+            if (round(seconds, 2)%1 == 0) {
+              ratingString = minutes + ":" + round(seconds, 2) + ".00"
+            }
+            else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+              ratingString = minutes + ":" + round(seconds, 2) + "0"
+            }
+            else {
+              ratingString = minutes + ":" + round(seconds, 2)
+            }
+          }
+        }
+        else {
+          if (round(seconds, 2)%1 == 0) {
+            ratingString = round(rating, 2) + ".00"
+          }
+          else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+            ratingString = round(rating, 2) + "0"
+          }
+          else {
+            ratingString = round(rating, 2)
+          }
+        }
+        table_data += '<tr>' +
+                      '<td>' + ratings[i].rank + '</td>' +
+                      '<td>' + ratings[i].name + '</td>' +
+                      '<td>' + ratings[i].country + '</td>' +
+                      '<td>' + ratingString + '</td>' +
+                      '<td>' + ratings[i].nsolves + '</td>' +
+                      '<td>' + ratings[i].date + '</td>' +
+                      '</tr>'
+      }
+      table_data += '</table>'
+      $('#ranks_table').html(table_data)
+    })
+}
+</script>
+<script>
+function showGlickoPerson() {
+  var date = document.getElementById('dateInput').value
+  var num = document.getElementById('numInput').value
+  var eventId = document.getElementById('frm1').elements[0].value
+  filepath = "/ranks/data/" + date + "_Glicko-2/" + eventId + "_" + date + ".csv"
+  d3.csv(filepath, function(d) {
+    return {
+      rank : +d.Rank,
+      rating : d.Rating,
+      country : d.Country,
+      name : d.Name,
+      wcaid : d.WcaId
+    }}).then((ratings) => {
+      wcaid = document.getElementById('frm1').elements[1].value
+      personrating = ratings.filter(d => {return d.wcaid == wcaid;})
+      var table_data = '<table class="table table-bordered table-striped"><tr><th>Rank</th><th>Name</th><th>Country</th><th>Rating</th>'
+      for (var i = 0; i<1; i++)
+      {
+        if (personrating[i].rating == 1500)
+          ratingString = "unrated"
+        else {
+          ratingString = round(personrating[i].rating, 2)
+        }
+        table_data += '<tr>' +
+                      '<td>' + personrating[i].rank + '</td>' +
+                      '<td>' + personrating[i].name + '</td>' +
+                      '<td>' + personrating[i].country + '</td>' +
+                      '<td>' + ratingString + '</td>' +
+                      '</tr>'
+      }
+      table_data += '</table>'
+      $('#ranks_table').html(table_data)
+    })
+}
+</script>
+<script>
+function showLaZerRanksPerson() {
+  var date = document.getElementById('dateInput').value
+  var eventId = document.getElementById('frm1').elements[0].value
+  filepath = "/ranks/data/" + date + "/" + eventId + "_" + date + ".csv"
+  d3.csv(filepath, function(d) {
+    return {
+      rank : +d.Rank,
+      rating : d.Rating,
+      nsolves : +d.nSolves,
+      country : d.Country,
+      name : d.Name,
+      best : d.Best,
+      date : d.Date,
+      wcaid : d.WcaId
+    }}).then((ratings) => {
+      wcaid = document.getElementById('frm1').elements[1].value
+      personrating = ratings.filter(d => {return d.wcaid == wcaid;})
+      var table_data = '<table class="table table-bordered table-striped"><tr><th>Rank</th><th>Name</th><th>Country</th><th>Rating</th><th>Solves</th><th>Date of Last Comp</th>'
+      for (var i = 0; i<1; i++)
+      {
+        rating = personrating[i].rating
+        minutes = Math.floor(rating/60)
+        seconds = rating - minutes*60
+        console.log(round(seconds, 2)%.1)
+        if (rating >= 60.0) {
+          if (seconds < 10) {
+            if (round(seconds, 2)%1 == 0) {
+              ratingString = minutes + ":0" + round(seconds, 2) + ".00"
+            }
+            else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+              ratingString = minutes + ":0" + round(seconds, 2) + "0"
+            }
+            else {
+              ratingString = minutes + ":0" + round(seconds, 2)
+            }
+          }
+          else {
+            if (round(seconds, 2)%1 == 0) {
+              ratingString = minutes + ":" + round(seconds, 2) + ".00"
+            }
+            else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+              ratingString = minutes + ":" + round(seconds, 2) + "0"
+            }
+            else {
+              ratingString = minutes + ":" + round(seconds, 2)
+            }
+          }
+        }
+        else {
+          if (round(seconds, 2)%1 == 0) {
+            ratingString = round(rating, 2) + ".00"
+          }
+          else if (round(round(seconds, 2)%0.1, 10) == 0.1) {
+            ratingString = round(rating, 2) + "0"
+          }
+          else {
+            ratingString = round(rating, 2)
+          }
+        }
+        table_data += '<tr>' +
+                      '<td>' + personrating[i].rank + '</td>' +
+                      '<td>' + personrating[i].name + '</td>' +
+                      '<td>' + personrating[i].country + '</td>' +
+                      '<td>' + round(rating, 2) + '</td>' +
+                      '<td>' + personrating[i].nsolves + '</td>' +
+                      '<td>' + personrating[i].date + '</td>' +
+                      '</tr>'
+      }
+      table_data += '</table>'
+      $('#ranks_table').html(table_data)
+    })
+}
+</script>
+<script>
+function genTable(rankingType) {
+  if (rankingType == 1) {
+    genGlickoTable()
+  }
+  else if (rankingType == 0) {
+    genLaZerRanksTable()
+  }
+  else {
+    genLaZerRanksTable()
+  }
+}
+</script>
+<script>
+function showPerson(rankingType) {
+  if (rankingType == 1) {
+    showGlickoPerson()
+  }
+  else if (rankingType == 0) {
+    showLaZerRanksPerson()
+  }
+  else {
+    showLaZerRanksPerson()
+  }
+}
+</script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="table-responsive">
+    <h2 align="left">LaZerRanks</h2>
+    </div>
+    <div align="left">
+      <form id = "frm1">
+        Event:<select name="event">
+          <option value="333">3x3 Cube</option>
+          <option value="222">2x2 Cube</option>
+          <option value="444">4x4 Cube</option>
+          <option value="555">5x5 Cube</option>
+          <option value="666">6x6 Cube</option>
+          <option value="777">7x7 Cube</option>
+          <option value="minx">Megaminx</option>
+          <option value="pyram">Pyraminx</option>
+          <option value="skewb">Skewb</option>
+          <option value="sq1">Square-1</option>
+          <option value="clock">Clock</option>
+          <option value="333bf">3x3 Blindfolded</option>
+          <option value="333oh">3x3 One-Handed</option>
+          <option value="333ft">3x3 With Feet</option>
+          <option value="333fm">3x3 Fewest Moves</option>
+          <option value="444bf">4x4 Blindfolded</option>
+          <option value="555bf">5x5 Blindfolded</option>
+      </select>
+        WCA ID: <input name="wcaId" placeholder="Type WCA ID">
+                </input>
+      <button type="button" name="showPersonButton" onclick="showPerson(document.getElementById('rankingType').value);">Generate Individual Rating!</button>
+      </form>
+      <br>
+      <button type="button" name="load_data" id="load_data" onclick="genTable(document.getElementById('rankingType').value);">Generate Rating Table!</button>
+      <select type="number" name="numInput" id="numInput">
+        <option value="10">Top 10</option>
+        <option value="100">Top 100</option>
+        <option value="1000">Top 1000</option>
+      </select>
+      <select list="dates" name="dateInput" id="dateInput">
+        <option value="Feb_2019">Feb 2019</option>
+        <option value="Jan_2019">Jan 2019</option>
+      </select>
+      <select list="rankingTypes" name = "rankingType" id="rankingType">
+        <option value="0">LaZerRanks</option>
+        <option value="1">Glicko-2</option>
+      </select>
+      <br><br>
+      <p id="p1" ></p>
+    </div>
+    <br>
+    <div id="ranks_table" align="left">
+    </div>
+   </div>
+  </div>
+</body>
+</html>
